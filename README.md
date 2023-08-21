@@ -14,4 +14,4 @@ Currently, two official plugins are available:
 https://github.com/Ayah-AQ/resty/pulls
 
 ## UML
-[UML](README.md)
+![UML](./Screenshot%202023-08-21%20201853.png)
