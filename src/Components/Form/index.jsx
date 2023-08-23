@@ -1,34 +1,59 @@
 import './Form.scss';
+import { useState } from 'react';
 
-function Form (props) {
+function Form(props){
+  const[input, setInput]=useState("")
+  const[method, setMethod]= useState("get")
+  const [textarea, setTextarea]=useState(false)
+  const[textareaData, setTextareaData]= useState({})
 
- const handleSubmit = e => {
+
+  let handleData=(e)=>{
+    setTextareaData(e.target.value)
+    // console.log("data",textareaData)
+  }
+  let handleChange=(e)=>{
+    setInput(e.target.value)
+   
+  }
+  let handleMethodChange=(e)=>{
+    e.preventDefault()
+    setMethod(e.target.id)
+    if(e.target.id === "post" || e.target.id == "put"){
+      setTextarea(true)
+    }else{
+      setTextarea(false)
+    }
+  }
+    let handleSubmit = e => {
     e.preventDefault();
     const formData = {
-      method:'GET',
-      url: 'https://pokeapi.co/api/v2/pokemon',
+      method:method,
+      url: input,
+      data:textareaData
     };
-    props.handleApiCall(formData); // check it later if props needed or not 
+    props.handleApiCall(formData);
   }
-
- 
-    return (
-      <>
-        <form onSubmit={handleSubmit}>
+  return(
+    <>
+        <form >
           <label >
             <span>URL: </span>
-            <input name='url' type='text' />
-            <button type="submit">GO!</button>
+            <input onChange={handleChange} name='url' type='text' />
+            <button type="submit" onClick={handleSubmit}>GO!</button>
           </label>
           <label className="methods">
-            <span id="get">GET</span>
-            <span id="post">POST</span>
-            <span id="put">PUT</span>
-            <span id="delete">DELETE</span>
+          <button onClick={handleMethodChange} id="get">GET</button>
+            <button onClick={handleMethodChange} id="post">POST</button>
+            <button onClick={handleMethodChange} id="put">PUT</button>
+            <button onClick={handleMethodChange} id="delete">DELETE</button>
           </label>
         </form>
-      </>
-    );
-  }
+        {textarea && 
+        <textarea onChange={handleData} id="textarea" cols="5" rows="5"></textarea>
+      }
+    </>
+  )
+}
 
-export default Form;
+export default Form
