@@ -12,7 +12,7 @@ import React from 'react';
 
 function Header () {
     return (
-      <header>
+      <header data-testid="headerTest">
         <h1>RESTy</h1>
       </header>
     );
