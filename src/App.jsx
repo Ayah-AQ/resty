@@ -64,8 +64,8 @@ console.log(data)
     <React.Fragment>
       <Header />
       <div className="centered-container">
-        Request Method: {requestParams.method} <br />
-        URL: {requestParams.url}
+      <div data-testid="req-method">Request Method: {requestParams.method}</div>
+      <div data-testid="url">URL: {requestParams.url}</div>
       </div>
 
       <Form handleApiCall={handleApiCall} />
