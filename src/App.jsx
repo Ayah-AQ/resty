@@ -1,79 +1,107 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useReducer, useEffect } from "react";
 import "./App.scss";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
 import Form from "./Components/Form";
 import Results from "./Components/Results";
+import History from "./Components/Results/History";
+import axios from "axios";
 
-function App() {
-  const [loading, setLoading] = useState(false);
-  const [requestParams, setRequestParams] = useState({
+let response;
+const initialState = {
+  loading: false,
+  requestParams: {
     method: "GET",
     url: "",
     body: "",
-  });
-  const [response, setResponse] = useState(null);
-  const [error, setError] = useState(null);
-  const [data, setData] = useState("");
+  },
+  response: null,
+  formattedHeaders: "",
+  formattedData: "",
+  history: [],
+  error: null,
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "CALL_API":
+      return {
+        ...state,
+        loading: true,
+        requestParams: action.payload.requestParams,
+      };
+    case "API_SUCCESS":
+      response = action.payload.response;
+      return {
+        ...state,
+        loading: false,
+        response: action.payload.response,
+        formattedHeaders: JSON.stringify(response.headers, null, 2),
+        formattedData: JSON.stringify(response.data, null, 2),
+        history: [
+          ...state.history,
+          {
+            method: action.payload.requestParams.method,
+            url: action.payload.requestParams.url,
+            response: response.data,
+          },
+        ],
+      };
+    case "API_ERROR":
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+      };
+    default:
+      return state;
+  }
+};
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    if (response) {
-      setData(JSON.stringify(response.data, null, 2));
-      setError(null);
+    if (state.response) {
+      console.log("response is triggered");
     }
-  }, [response]);
+  }, [state.response]);
 
-  async function handleApiCall(requestParams) {
-    setData("");
-    setError(null);
-    setLoading(true);
-  
+  async function callApi(requestParams) {
+    dispatch({ type: "CALL_API", payload: { requestParams } });
     try {
       const requestOptions = {
         method: requestParams.method,
         url: requestParams.url,
         data: requestParams.body,
       };
-  
+
       const apiResponse = await axios(requestOptions);
-      setResponse(apiResponse);
+      dispatch({
+        type: "API_SUCCESS",
+        payload: { requestParams, response: apiResponse },
+      });
     } catch (error) {
-      setLoading(false);
-  
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          setError(
-            `${error.response.status} ${error.response.statusText}: ${error.response.data}`
-          );
-        } else {
-          setError('Network Error: Please check your internet connection.');
-        }
-      } else {
-        setError(error.message || 'An error occurred');
-      }
-    } finally {
-      setLoading(false);
+      dispatch({ type: "API_ERROR", payload: { error } });
+      console.error("Error fetching data:", error);
     }
-  
-    setRequestParams(requestParams);
   }
-  
-console.log(data)
+
   return (
     <React.Fragment>
       <Header />
-      <div className="centered-container">
-      <div data-testid="req-method">Request Method: {requestParams.method}</div>
-      <div data-testid="url">URL: {requestParams.url}</div>
+      <div className="centered-container" >
+      <div data-testid="req-method">Request Method: {state.requestParams.method} </div>
+      <div data-testid="url">URL: {state.requestParams.url}</div>
       </div>
 
-      <Form handleApiCall={handleApiCall} />
+      <Form handleApiCall={callApi} />
       <Results
-        loading={loading}
-        error={error}
-        data={data}
+        loading={state.loading}
+        error={state.error}
+        data={state.data}
       />
+      <History history={state.history} />
       <Footer />
     </React.Fragment>
   );
