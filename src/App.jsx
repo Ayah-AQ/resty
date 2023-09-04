@@ -96,12 +96,12 @@ function App() {
       </div>
 
       <Form handleApiCall={callApi} />
+      <History history={state.history} handleApiCall={callApi}/>
       <Results
         loading={state.loading}
         error={state.error}
-        data={state.data}
+        data={state.formattedData}
       />
-      <History history={state.history} />
       <Footer />
     </React.Fragment>
   );
